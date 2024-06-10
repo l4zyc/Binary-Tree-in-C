@@ -1,33 +1,42 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-//Create a node
 struct Node {
-    struct Node *left, *right;
-    int value;
+    int value;  
+    struct Node *right, *left;
 } *root = NULL;
 
 struct Node* newNode(int value) {
     struct Node* node = (struct Node*) malloc(sizeof(struct Node));
+    node->right = NULL;
+    node->left = NULL;
     node->value = value;
-    node->left = node->right = NULL;
+    
     return node;
 }
 
-
-//insert node
-struct Node* insert(struct Node* root, int value) {
-    if(!root) {
+struct Node* insertNode(struct Node *root, int value) {
+    if(root == NULL) {
         return newNode(value);
     } else if(root->value > value) {
-        root->left = insert(root->left, value);
+        root->left = insertNode(root->left, value);
     } else {
-        root->right = insert(root->right, value);
+        root->right = insertNode(root->right, value);
     }
     return root;
 }
 
-struct Node* delete(struct Node* root, int value) {
+void inOrder(struct Node *root) {
+    if(root == NULL) {
+        return;
+    } else {
+        inOrder(root->left);
+        printf("%d ", root->value);
+        inOrder(root->right);
+    }
+}
+
+struct Node* delete(struct Node *root, int value) {
     if(root == NULL) {
         return root;
     } else {
@@ -38,18 +47,20 @@ struct Node* delete(struct Node* root, int value) {
         } else {
             struct Node* child = root->left ? root->left : root->right;
 
-            if(!child) {
-                struct Node* temp = child;
+            if(child == NULL) {
+                struct Node* temp = root;
                 root = NULL;
-                free(root);
-            } else if(!root->left || !root->right) {
-                *root = *child;
+                free(temp);
             } else {
-                struct Node *ptr = root->left;
-                while(ptr->right) ptr = ptr->right;
-                root->value = ptr->value;
+                if(!root->left || !root->right) {
+                    *root = *child;
+                } else {
+                    struct Node *ptr = root->left;
+                    while(ptr->right) ptr = ptr->right;
 
-                root->left = delete(root->left, ptr->value);
+                    root->value = ptr->value;
+                    root->left = delete(root->left, ptr->value);
+                }
             }
         }
     }
@@ -57,34 +68,25 @@ struct Node* delete(struct Node* root, int value) {
     return root;
 }
 
-void inOrder(struct Node* root) {
-    if(root == NULL) {
-        return;
-    } else {
-        inOrder(root->left);
-        printf("%d\n", root->value);
-        inOrder(root->right);
-    }
-}
-
 void update(struct Node *root, int value, int newValue) {
     if(root == NULL) {
         return;
     } else {
-        update(root->left, value , newValue);
+        update(root->left, value, newValue);
         if(root->value == value) {
             root->value = newValue;
-            return;
         }
-        update(root->right, value , newValue);
+        update(root->right, value, newValue);
     }
+
 }
 
 int main() {
-    root = insert(root, 2);
-    root = insert(root, 1);
-    root = insert(root, 3);
+    root = insertNode(root, 1);
+    root = insertNode(root, 3);
+    root = insertNode(root, 2);
     delete(root,1);
     inOrder(root);
+
     return 0;
 }
